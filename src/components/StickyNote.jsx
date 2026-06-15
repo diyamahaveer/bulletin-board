@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion, useMotionValue, animate } from 'framer-motion'
+import { useBoard } from '../store/useBoard';
+import NoteMenu from './NoteMenu';
 
 export default function StickyNote({ 
   id,
@@ -8,115 +11,101 @@ export default function StickyNote({
   content,
   isOwner,
   offset,
+  scale = 1,
   onDragEnd,
   onTextSave,
+  onRecolor = () => {},
+  onDelete = () => {},
+  onShare = () => {},
+  onLike = () => {},
+  onReport = () => {},
 }){
-    //tracks if the user is dragging sticky note
-    const[isDragging, setIsDragging] = useState(false);
     //tracks the editing and whether that's happening or not
     const[isEditing, setIsEditing] = useState(false);
     //tracks the text and rerenders
     const [text, setText] = useState(content);
-    //dragStart tracks where the sticky note is and how far they have moved
-    //we use useRef that's null meaning it's current {null}
-    const dragStart = useRef(null);
-    //this is the last location which we send to supabase once set
-    const lastLoc = useRef({x, y});
 
+    //motionX/motionY drive the note's position via CSS transform
+    //prevents dragging from rerendering
+    const motionX = useMotionValue(x);
+    const motionY = useMotionValue(y);
 
+    //tracks whether THIS user is currently dragging so position incoming
+    const isDraggingRef = useRef(false);
 
-    //this function occurs when someone presses the mouse button down on the baord
-    const handleMouseDown = (e) => {
-        //e is the event object that is passed to the event handler automatically and this one is checking which button was clicked
-        //if it's not a left click then we ignore it and stop function
-        if(e.button !== 0){
-            return;
+    //this is to track the toggleMenu state
+    const toggleMenu = useBoard((state) => state.toggleMenu)
+
+    //if x/y props change from the outside and smoothly animate to the new 
+    //position but only if not actively dragging
+    useEffect(() => {
+        if(!isDraggingRef.current){
+            animate(motionX, x, { type: 'spring', stiffness: 400, damping: 35})
+            animate(motionY, y, { type: 'spring', stiffness: 400, damping: 35})
         }
+    }, [x, y])
 
-        e.stopPropagation()
-
-        //set dragging to true because we started dragging
-        setIsDragging(true);
-        //four values for current and they calculate the movement
-        dragStart.current = {
-            //where mouse was on screen when the drag started
-            mouseX: e.clientX,
-            mouseY: e.clientY,
-            //where the canvas was when the drag started
-            noteX: lastLoc.current.x,
-            noteY: lastLoc.current.y,
-        }
+    const handleDragStart = () => {
+        isDraggingRef.current = true;
     }
 
-    //this useEffect sets up the mouse move and mouse up listeners
-    //this is for panning
-    //it re-runs whenever isDragging changes so the handlers is always updated
-    useEffect(() => {
-        const handleMouseMove = (e) => {
-            //if we are not dragging or dragStart is empty, do nothing
-            if(!isDragging || !dragStart.current){
-                return;
-            }
+    const handleDragEnd = () => {
+        isDraggingRef.current = false;
+        onDragEnd(motionX.get(), motionY.get());
+    }
 
-            //how far has the mouse moved since we started dragging
-            const dx = e.clientX - dragStart.current.mouseX;
-            const dy = e.clientY - dragStart.current.mouseY;
-
-            //update the canvas position by adding the distance traveled to where the canvas started
-            lastLoc.current = {
-                x: dragStart.current.noteX + dx,
-                y: dragStart.current.noteY + dy,
-            }
-
-            setIsDragging(true);//force a rerender so the note visually moves
-        }
-
-        //handleMouseUp fires when the user releases the mouse button
-        const handleMouseUp = () => {
-            if(!isDragging){
-                return
-            }
-            setIsDragging(false);
-            //clear the snapshot so it's ready for the next drag
-            dragStart.current = null;
-            onDragEnd(lastLoc.current.x, lastLoc.current.y);
-        }
-
-        //attach both listeners to the window and not the div
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-
-        return () => {
-            //cleanup function
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
-        }
-    }, [isDragging]) //dependency array
+    const handleDrag = (event, info) => {
+        //we want to scale by 1/scale to correct the difference
+        motionX.set(motionX.get() + info.delta.x / scale);
+        motionY.set(motionY.get() + info.delta.y / scale);
+    }
 
     return (
-        <div
-        className='absolute rounded-lg shadow-lg w-48 min-h-24 cursor-grab active:cursor-grabbing'
+        <motion.div
+        drag
+        dragMomentum={false}
+        dragElastic={0}
+        onMouseDown={(e) => e.stopPropagation()}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDrag={handleDrag}
         style={{
-            left: lastLoc.current.x,
-            top: lastLoc.current.y,
+            x: motionX,
+            y: motionY,
+            left: 0,
+            top: 0,
             backgroundColor: color,
+            touchAction: 'none',
+            userSelect: 'none',
             boxShadow: isEditing
                 ? '0 0 0 3px rgba(59, 130, 246, 0.6)'
-                : '0 4px 6px rgba(0,0,0,0.1)',
+                : '0 4px 6px rgba(0, 0, 0, 0.1)'
         }}
-        onMouseDown={handleMouseDown}
+        className='absolute rounded-lg shadow-lg w-48 min-h-24 cursor-grab active:cursor-grabbing'
         >
-            <div className= 'flex justify-end p-1'>
+            {/* three-dot menu */}
+            <div className='flex justify-end p-1'>
                 <button
-                    className= 'text-gray-500 hover:text-gray-800 text-lg leading-none'
+                    className='text-gray-500 hover:text-gray-800 text-lg leading-none'
+                    onPointerDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
-                        e.stopPropagation();
-
+                        e.stopPropagation()
+                        toggleMenu(id);
                     }}
                 >
-                ...
+                    ...
                 </button>
+                <NoteMenu
+                    id={id}
+                    isOwner={isOwner}
+                    onRecolor={onRecolor}
+                    onDelete={onDelete}
+                    onShare={onShare}
+                    onLike={onLike}
+                    onReport={onReport}
+                />
             </div>
+
             {/* text area */}
             <div className='px-3 pb-3'>
                 {isEditing ? (
@@ -125,33 +114,32 @@ export default function StickyNote({
                         className='w-full bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-gray-400'
                         placeholder='type something'
                         value={text}
-
+                        style={{ userSelect: 'text' }}
                         onChange={(e) => setText(e.target.value)}
                         onBlur={() => {
-                            setIsEditing(false);
+                            setIsEditing(false)
                             onTextSave(text)
                         }}
-
-                        onMouseDown={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
                     />
-
-                    ) : (
-                        <p
+                ) : (
+                    <p
                         className='text-sm text-gray-800 min-h-12 cursor-text'
-                        onClick={() =>{
+                        onPointerDown={(e) => {
+                            if(isOwner) e.stopPropagation()
+                        }}
+                        onClick={() => {
                             if(isOwner){
-                                setIsEditing(true);
+                                setIsEditing(true)
                             }
                         }}
-                        >
-                            {text || (
-                                <span className='text-gray-400'>type something</span>
-                            )}
-                        </p>
+                    >
+                        {text || <span className="text-gray-400">type something</span>}
+                    </p>
+
                     )}
-
-                </div>
-
             </div>
+
+        </motion.div>
     )
 }

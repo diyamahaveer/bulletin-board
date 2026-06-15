@@ -34,3 +34,11 @@ export default function App() {
     </div>
   )
 }
+
+
+
+
+# formula 
+The culprit is handleDrag's correction math. The formula info.delta.x * (1 - 1/scale) was written to subtract a correction, but Framer Motion's drag already applies the delta correctly relative to the element's own coordinate space
+
+The simplest fix: delete handleDrag entirely and remove onDrag={handleDrag}. Framer Motion handles the 1:1 tracking natively when you're not fighting it:

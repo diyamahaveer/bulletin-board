@@ -76,17 +76,35 @@ export default function Board(){
 
     //this useEffect sets up the scroll wheel zoom listener
     useEffect(() => {
-        const handleWheel = (e) =>{
+        const handleWheel = (e) => {
             e.preventDefault();
-            setScale((prev) => {
-                const delta = e.deltaY * -0.001;
-                return Math.min(Math.max(prev + delta, 0.1), 3);
-            })
+
+            if (e.ctrlKey || e.metaKey) {
+
+                const delta = e.deltaY * -0.01;
+                const newScale = Math.min(Math.max(scale * (1 + delta), 0.1), 3);
+
+                //world coordinates currently under the cursor
+                const worldX = (e.clientX - offset.x) / scale;
+                const worldY = (e.clientY - offset.y) / scale;
+
+                setOffset({
+                    x: e.clientX - worldX * newScale,
+                    y: e.clientY - worldY * newScale,
+                })
+                setScale(newScale);
+            } else {
+                // two-finger scroll / pan
+                setOffset((prev) => ({
+                    x: prev.x - e.deltaX,
+                    y: prev.y - e.deltaY,
+                }))
+            }
         }
 
         window.addEventListener('wheel', handleWheel, { passive: false});
         return () => window.removeEventListener('wheel', handleWheel);
-    }, []) //empty dependency: it runs once when the component first appears
+    }, [scale, offset]) //empty dependency: it runs once when the component first appears
 
     return (
         <div
@@ -103,22 +121,18 @@ export default function Board(){
                 position: 'relative',
             }}
             >
-                <div
-                className='absolute bg-yellow-300 rounded shadow p-4 text-sm'
-                style={{left: 200, top: 200}}
-                >
-                    <StickyNote
-                    id="test-1"
-                    x={200}
-                    y={200}
-                    color="#fef08a"
-                    content=""
-                    isOwner={true}
-                    offset={offset}
-                    onDragEnd={(x, y) => console.log('drag ended at', x, y)}
-                    onTextSave={(text) => console.log('save text', text)}
-                    />
-                </div>
+                <StickyNote
+                id="test-1"
+                x={200}
+                y={200}
+                color="#fef08a"
+                content=""
+                isOwner={true}
+                offset={offset}
+                scale={scale}
+                onDragEnd={(x, y) => console.log('drag ended at', x, y)}
+                onTextSave={(text) => console.log('save text', text)}
+                />
             </div>
         </div>
     )

@@ -16,7 +16,7 @@
     "nanoid": "^5.1.11",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "zustand": "^5.0.13"
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

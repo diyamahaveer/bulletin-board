@@ -1,114 +1,123 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import { useBoard } from '../store/useBoard'
 
-export default function NoteMenu(){
-    //the offset is how far we've moved on your canvas from the starting position and x moves left/right and y moves up/down
-    // 0, 0 means we haven't moved yet
-    const[offset, setOffset] = useState({x: 0 , y: 0});
-    //scale tracks the zoom level of the canvas
-    // 1 means 100% zoom, 0.5 means zoomed out, 2 means zoomed in
-    const [scale, setScale] = useState(1)
-    //tracks if the user is currently searching, or moving around
-    const[isDragging, setIsDragging] = useState(false);
-    //dragStart tracks where the user is and how far they have moved
-    //we use useRef that's null meaning it's current {null}
-    const dragStart = useRef(null);
+//preset colors for the sticky notes
+const COLOR_OPTIONS = [
+    '#fef08a', // yellow
+    '#fecaca', // pink
+    '#bfdbfe', // blue
+    '#bbf7d0', // green
+    '#e9d5ff', // purple
+    '#fed7aa', // orange
+]
+export default function NoteMenu({
+    id,
+    isOwner,
+    onRecolor,
+    onDelete,
+    onShare,
+    onLike,
+    onReport,
+}){
+    const openMenuId = useBoard((state) => state.openMenuId);
+    const closeMenu = useBoard((state) => state.closeMenu);
+    const menuRef = useRef(null);
 
-    //this function occurs when someone presses the mouse button down on the baord
-    const handleMouseDown = (e) => {
-        //e is the event object that is passed to the event handler automatically and this one is checking which button was clicked
-        //if it's not a left click then we ignore it and stop function
-        if(e.button !== 0){
-            return;
-        }
+    const isOpen = openMenuId === id;
 
-        //set dragging to true because we started dragging
-        setIsDragging(true);
-        //four values for current and they calculate the movement
-        dragStart.current = {
-            //where mouse was on screen when the drag started
-            mouseX: e.clientX,
-            mouseY: e.clientY,
-            //where the canvas was when the drag started
-            offsetX: offset.x,
-            offsetY: offset.y,
-        }
-    }
-
-    //this useEffect sets up the mouse move and mouse up listeners
-    //this is for panning
-    //it re-runs whenever isDragging changes so the handlers is always updated
     useEffect(() => {
-        const handleMouseMove = (e) => {
-            //if we are not dragging or dragStart is empty, do nothing
-            if(!isDragging || !dragStart.current){
-                return;
+        if(!isOpen) return;
+
+        const handleClickOutside = (e) => {
+            if(menuRef.current && !menuRef.current.contains(e.target)){
+                closeMenu();
             }
-
-            //how far has the mouse moved since we started dragging
-            const dx = e.clientX - dragStart.current.mouseX;
-            const dy = e.clientY - dragStart.current.mouseY;
-
-            //update the canvas position by adding the distance traveled to where the canvas started
-            setOffset({
-                x: dragStart.current.offsetX + dx,
-                y: dragStart.current.offsetY + dy,
-            })
         }
 
-        //handleMouseUp fires when the user releases the mouse button
-        const handleMouseUp = () => {
-            setIsDragging(false);
-            //clear the snapshot so it's ready for the next drag
-            dragStart.current = null;
-        }
+        window.addEventListener('mousedown', handleClickOutside);
+        return () => window.removeEventListener('mousedown', handleClickOutside);
+    }, [isOpen, closeMenu])
 
-        //attach both listeners to the window and not the div
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-
-        return () => {
-            //cleanup function
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
-        }
-    }, [isDragging]) //dependency array
-
-    //this useEffect sets up the scroll wheel zoom listener
-    useEffect(() => {
-        const handleWheel = (e) =>{
-            e.preventDefault();
-            setScale((prev) => {
-                const delta = e.deltaY * -0.001;
-                return Math.min(Math.max(prev + delta, 0.1), 3);
-            })
-        }
-
-        window.addEventListener('wheel', handleWheel, { passive: false});
-        return () => window.removeEventListener('wheel', handleWheel);
-    }, []) //empty dependency: it runs once when the component first appears
+    if(!isOpen) return null;
 
     return (
         <div
-        className="w-screen h-screen overflow-hidden bg-stone-100"
-        style={{cursor: isDragging ? 'grabbing' : 'grab'}}
-        onMouseDown={handleMouseDown}
+            ref={menuRef}
+            className='absolute right-1 top-8 z-10 w-40 rounded-lg bg-white shadow-lg border border-gray-200 py-1 text-sm'
+            onMouseDown={(e) => e.stopPropagation()}
         >
-            <div
-            style={{
-                transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-                transformOrigin: '0 0',
-                width:'100%',
-                height: '100%',
-                position: 'relative',
-            }}
-            >
-                <div
-                className="absolute bg-yellow-300 rounded shadow p-4 text-sm"
-                style={{left: 200, top: 200}}
-                >
-                    sticky note will go here
-                </div>
-            </div>
+            {isOwner ? (
+                <>
+                    <div className='px-3 py-1 text-xs text-gray-400'>Recolor</div>
+                    <div className='flex gap-2 px-3 pb-2'>
+                        {COLOR_OPTIONS.map((color) => (
+                            <button
+                            key={color}
+                            className='w-5 h-5 rounded-full border border-gray-300'
+                            style={{ backgroundColor: color }}
+                            onClick={() => {
+                                onRecolor(color)
+                                closeMenu()
+                            }}
+                            />
+                        ))}
+                    </div>
+                    <hr className='border-gray-100'/>
+                    <MenuItem
+                        label='share'
+                        onClick={() => {
+                            onShare()
+                            closeMenu()
+                        }}
+                    />
+                    <MenuItem
+                        label='delete'
+                        danger
+                        onClick={() => {
+                            onDelete()
+                            closeMenu()
+                        }}
+                    />
+                </>
+            ) : (
+                <>
+                    <MenuItem
+                        label='like'
+                        onClick={() => {
+                            onLike()
+                            closeMenu()
+                        }}
+                    />
+                    <MenuItem
+                        label='share'
+                        onClick={() => {
+                            onShare()
+                            closeMenu()
+                        }}
+                    />
+                    <MenuItem
+                        label='report'
+                        danger
+                        onClick={() => {
+                            onReport()
+                            closeMenu()
+                        }}
+                    />
+                </>
+            )}
         </div>
+    )
+}
+
+function MenuItem({ label, onClick, danger }) {
+    return (
+        <button
+            className={`w-full text-left px-3 py-1.5 hover:bg-gray-100 ${
+                danger ? 'text-red-600' : 'text-gray-700'
+            }`}
+            onClick={onClick}
+        >
+            {label}
+        </button>
     )
 }
