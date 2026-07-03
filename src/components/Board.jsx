@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import StickyNote from './StickyNote'
+import { color } from 'framer-motion';
 
 export default function Board(){
     //the offset is how far we've moved on your canvas from the starting position and x moves left/right and y moves up/down
@@ -130,6 +131,7 @@ export default function Board(){
                 isOwner={true}
                 offset={offset}
                 scale={scale}
+                onRecolor={(color) => console.log('recolor test note to', color)}
                 onDragEnd={(x, y) => console.log('drag ended at', x, y)}
                 onTextSave={(text) => console.log('save text', text)}
                 />

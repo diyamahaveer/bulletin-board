@@ -30,6 +30,8 @@ export default function StickyNote({
     const motionX = useMotionValue(x);
     const motionY = useMotionValue(y);
 
+    const [currentColor, setCurrentColor] = useState(color);
+
     //tracks whether THIS user is currently dragging so position incoming
     const isDraggingRef = useRef(false);
 
@@ -74,7 +76,7 @@ export default function StickyNote({
             y: motionY,
             left: 0,
             top: 0,
-            backgroundColor: color,
+            backgroundColor: currentColor,
             touchAction: 'none',
             userSelect: 'none',
             boxShadow: isEditing
@@ -98,7 +100,10 @@ export default function StickyNote({
                 <NoteMenu
                     id={id}
                     isOwner={isOwner}
-                    onRecolor={onRecolor}
+                    onRecolor={(newColor) =>{
+                        setCurrentColor(newColor);
+                        onRecolor(newColor);
+                    }}
                     onDelete={onDelete}
                     onShare={onShare}
                     onLike={onLike}
