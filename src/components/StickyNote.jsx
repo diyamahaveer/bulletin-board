@@ -61,24 +61,8 @@ export default function StickyNote({
         }
     }, [x, y])
 
-    const handleDragStart = () => {
-        isDraggingRef.current = true;
-    }
-
-    const handleDragEnd = () => {
-        isDraggingRef.current = false;
-        onDragEnd(motionX.get(), motionY.get());
-    }
-
-    const handleDrag = (event, info) => {
-        //we want to scale by 1/scale to correct the difference
-        motionX.set(motionX.get() + info.delta.x / scale);
-        motionY.set(motionY.get() + info.delta.y / scale);
-    }
-
     const handlePointerDown = (e) => {
         if (e.button !== 0) return
-        if (e.target !== e.currentTarget) return
         e.stopPropagation()
         pointerDown.current = true;
         isDraggingRef.current = true;
