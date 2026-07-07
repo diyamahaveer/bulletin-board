@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 async function fetchNotes(userId) {
     const { data, error } = await supabase
         .from('notes')
-        select(`
+        .select(`
             *,
             note_likes(user_id)
         `)
@@ -28,6 +28,7 @@ export function useNotes(currentUserId) {
     const { data: notes = [], isLoading } = useQuery({
         queryKey: ['notes', currentUserId],
         queryFn: () => fetchNotes(currentUserId),
+        enabled: !!currentUserId,
     })
 
     //CREATE

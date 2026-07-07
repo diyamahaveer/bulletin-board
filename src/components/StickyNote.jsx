@@ -78,6 +78,7 @@ export default function StickyNote({
 
     const handlePointerDown = (e) => {
         if (e.button !== 0) return
+        if (e.target !== e.currentTarget) return
         e.stopPropagation()
         pointerDown.current = true;
         isDraggingRef.current = true;

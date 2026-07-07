@@ -44,6 +44,18 @@ export default function Board(){
         }
     }
 
+    const handleCreateNote = () => {
+        //center of the screen in pixels
+        const screenCenterX = window.innerWidth / 2
+        const screenCenterY = window.innerHeight / 2
+
+        //convert to world coordinates
+        const worldX = (screenCenterX - offset.x) / scale
+        const worldY = (screenCenterY - offset.y) / scale
+
+        createNote.mutate({ x: worldX, y: worldY })
+    }
+
     useEffect(() => {
         supabase.auth.getUser().then(({ data: { user } }) => {
             setCurrentUserId(user?.id ?? null)
@@ -133,6 +145,13 @@ export default function Board(){
                     loading notes...
                 </div>
             )}
+
+            <button
+                className='fixed bottom-8 right-8 w-12 h-12 bg-yellow-400 hover:bg-yellow-500 text-white text-2xl rounded-full shadow-lg z-10 flex items-center justify-center'
+                onClick={handleCreateNote}
+            >
+                +
+            </button>
 
             <div
             style={{

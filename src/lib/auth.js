@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 
-export async function getOrCreateSessions() {
+export async function getOrCreateSession() {
     //check if they are a returning visitor or not
     const { data: { session } } = await supabase.auth.getSession()
 
