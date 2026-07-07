@@ -28,7 +28,7 @@ export function useNotes(currentUserId) {
     const { data: notes = [], isLoading } = useQuery({
         queryKey: ['notes', currentUserId],
         queryFn: () => fetchNotes(currentUserId),
-        enabled: !!currentUserId,
+        enabled: true,
     })
 
     //CREATE
