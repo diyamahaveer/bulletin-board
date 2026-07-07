@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import StickyNote from './StickyNote'
-import { color } from 'framer-motion';
+import { useNotes } from '../hooks/useNotes';
+import { supabase } from '../lib/supabase';
+import { useRealtime } from '../hooks/useRealtime'
 
 export default function Board(){
     //the offset is how far we've moved on your canvas from the starting position and x moves left/right and y moves up/down
@@ -10,10 +12,16 @@ export default function Board(){
     // 1 means 100% zoom, 0.5 means zoomed out, 2 means zoomed in
     const [scale, setScale] = useState(1)
     //tracks if the user is currently searching, or moving around
-    const[isDragging, setIsDragging] = useState(false);
+    const[isDragging, setIsDragging] = useState(false)
+    //this is for users
+    const[currentUserId, setCurrentUserId] = useState(null)
     //dragStart tracks where the user is and how far they have moved
     //we use useRef that's null meaning it's current {null}
-    const dragStart = useRef(null);
+    const dragStart = useRef(null)
+    //notes array
+    
+    const { notes, isLoading, createNote, updatePosition, updateText, recolorNote, deleteNote, reportNote, likeNote, unlikeNote} = useNotes(currentUserId)
+    useRealtime(currentUserId)
 
     //this function occurs when someone presses the mouse button down on the baord
     const handleMouseDown = (e) => {
@@ -35,6 +43,12 @@ export default function Board(){
             offsetY: offset.y,
         }
     }
+
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            setCurrentUserId(user?.id ?? null)
+        })
+    }, [])
 
     //this useEffect sets up the mouse move and mouse up listeners
     //this is for panning
@@ -113,6 +127,13 @@ export default function Board(){
         style={{cursor: isDragging ? 'grabbing' : 'grab'}}
         onMouseDown={handleMouseDown}
         >
+
+            {isLoading && (
+                <div className='fixed top-4 left-1/2 -translate-x-1/2 text-sm text-gray-400 bg-white px-3 py-1 rounded-full shadow'>
+                    loading notes...
+                </div>
+            )}
+
             <div
             style={{
                 transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
@@ -122,19 +143,46 @@ export default function Board(){
                 position: 'relative',
             }}
             >
-                <StickyNote
-                id="test-1"
-                x={200}
-                y={200}
-                color="#fef08a"
-                content=""
-                isOwner={true}
-                offset={offset}
-                scale={scale}
-                onRecolor={(color) => console.log('recolor test note to', color)}
-                onDragEnd={(x, y) => console.log('drag ended at', x, y)}
-                onTextSave={(text) => console.log('save text', text)}
-                />
+                {notes.map((note) => (
+                    <StickyNote
+                    key={note.id}
+                    id={note.id}
+                    x={note.x}
+                    y={note.y}
+                    color={note.color}
+                    content={note.content}
+                    isOwner={note.user_id === currentUserId}
+                    likeCount={note.likeCount}
+                    likedByMe={note.likedByMe}
+                    offset={offset}
+                    scale={scale}
+
+                    onDragEnd={(x, y) => 
+                        updatePosition.mutate({ id: note.id, x, y })
+                    }
+                    onTextSave={(text) => 
+                        updateText.mutate({ id: note.id, content: text })
+                    }
+                    onRecolor={(color) => 
+                        recolorNote.mutate({ id: note.id, color})
+                    }
+                    onDelete={() =>
+                        deleteNote.mutate({ id: note.id })
+                    }
+
+                    onShare={() => console.log('share', note.id)}
+                    onLike={() => {
+                        const note_data = notes.find(n => n.id === note.id)
+                        if(note_data?.likedByMe){
+                            unlikeNote.mutate({ id: note.id })
+                        } else {
+                            likeNote.mutate({ id: note.id })
+                        }
+                    }}
+                    onReport={() => console.log('report', note.id)}
+                    />
+                
+                ))}
             </div>
         </div>
     )
