@@ -62,6 +62,7 @@ export default function StickyNote({
     }, [x, y])
 
     const handlePointerDown = (e) => {
+        console.log('note pointer down fired')
         if (e.button !== 0) return
         e.stopPropagation()
         pointerDown.current = true;

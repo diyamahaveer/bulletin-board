@@ -27,6 +27,7 @@ export default function Board(){
     const handleMouseDown = (e) => {
         //e is the event object that is passed to the event handler automatically and this one is checking which button was clicked
         //if it's not a left click then we ignore it and stop function
+        console.log('board mouse down fired')
         if(e.button !== 0){
             return;
         }
@@ -91,13 +92,13 @@ export default function Board(){
         }
 
         //attach both listeners to the window and not the div
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
+        window.addEventListener('pointermove', handleMouseMove);
+        window.addEventListener('pointerup', handleMouseUp);
 
         return () => {
             //cleanup function
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
+            window.removeEventListener('pointermove', handleMouseMove);
+            window.removeEventListener('pointerup', handleMouseUp);
         }
     }, [isDragging]) //dependency array
 
@@ -137,7 +138,7 @@ export default function Board(){
         <div
         className='w-screen h-screen overflow-hidden bg-stone-100'
         style={{cursor: isDragging ? 'grabbing' : 'grab'}}
-        onMouseDown={handleMouseDown}
+        onPointerDown={handleMouseDown}
         >
 
             {isLoading && (
