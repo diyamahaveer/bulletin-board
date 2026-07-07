@@ -107,9 +107,9 @@ export default function Board(){
             e.preventDefault();
 
             if (e.ctrlKey || e.metaKey) {
-
-                const delta = e.deltaY * -0.01;
-                const newScale = Math.min(Math.max(scale * (1 + delta), 0.1), 3);
+                //normalize delta across borders
+                const delta = e.deltaY * (e.deltaMode === 1 ? -0.05 : -0.01)
+                const newScale = Math.min(Math.max(scale * (1 + delta), 0.05), 5);
 
                 //world coordinates currently under the cursor
                 const worldX = (e.clientX - offset.x) / scale;

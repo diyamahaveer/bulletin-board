@@ -106,87 +106,93 @@ export default function StickyNote({
 
     return (
         <motion.div
-        onPointerDown={handlePointerDown}
-        style={{
-            x: motionX,
-            y: motionY,
-            left: 0,
-            top: 0,
-            backgroundColor: currentColor,
-            touchAction: 'none',
-            userSelect: 'none',
-            boxShadow: isEditing
-                ? '0 0 0 3px rgba(59, 130, 246, 0.6)'
-                : '0 4px 6px rgba(0, 0, 0, 0.1)'
-        }}
-        className='absolute rounded-lg shadow-lg w-48 min-h-24 cursor-grab active:cursor-grabbing'
+            style={{
+                x: motionX,
+                y: motionY,
+                left: 0,
+                top: 0,
+                backgroundColor: currentColor,
+                touchAction: 'none',
+                userSelect: 'none',
+                boxShadow: isEditing
+                    ? '0 0 0 3px rgba(59, 130, 246, 0.6)'
+                    : '0 4px 6px rgba(0, 0, 0, 0.1)'
+            }}
+            className='absolute rounded-lg shadow-lg w-48 min-h-24'
         >
-            {/* three-dot menu */}
-            <div className='flex justify-end p-1'>
-                <button
-                    className='text-gray-500 hover:text-gray-800 text-lg leading-none'
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        toggleMenu(id);
-                    }}
-                >
-                    ...
-                </button>
-                <NoteMenu
-                    id={id}
-                    isOwner={isOwner}
-                    onRecolor={(newColor) =>{
-                        setCurrentColor(newColor);
-                        onRecolor(newColor);
-                    }}
-                    onDelete={onDelete}
-                    onShare={onShare}
-                    onLike={onLike}
-                    onReport={onReport}
-                />
-            </div>
+            {/* drag handle */}
+            <div
+                className='absolute inset-0 cursor-grab active:cursor-grabbing'
+                onPointerDown={handlePointerDown}
+                style={{ zIndex: 0 }}
+            />
 
-            {/* text area */}
-            <div className='px-3 pb-3'>
-                {isEditing ? (
-                    <textarea
-                        autoFocus
-                        className='w-full bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-gray-400'
-                        placeholder='type something'
-                        value={text}
-                        style={{ userSelect: 'text' }}
-                        onChange={(e) => setText(e.target.value)}
-                        onBlur={() => {
-                            setIsEditing(false)
-                            onTextSave(text)
-                        }}
+            {/* all content sits above the drag handle */}
+            <div className='relative z-10'>
+                {/* three dot menu */}
+                <div className='flex justify-end p-1'>
+                    <button
+                        className='text-gray-500 hover:text-gray-800 text-lg leading-none'
                         onPointerDown={(e) => e.stopPropagation()}
-                    />
-                ) : (
-                    <p
-                        className='text-sm text-gray-800 min-h-12 cursor-text'
-                        onPointerDown={(e) => {
-                            if(isOwner) e.stopPropagation()
-                        }}
-                        onClick={() => {
-                            if(isOwner){
-                                setIsEditing(true)
-                            }
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            toggleMenu(id)
                         }}
                     >
-                        {text || <span className="text-gray-400">type something</span>}
-                    </p>
+                        ...
+                    </button>
+                    <NoteMenu
+                        id={id}
+                        isOwner={isOwner}
+                        onRecolor={(newColor) => {
+                            setCurrentColor(newColor)
+                            onRecolor(newColor)
+                        }}
+                        onDelete={onDelete}
+                        onShare={onShare}
+                        onLike={onLike}
+                        onReport={onReport}
+                    />
+                </div>
 
+                {/* text area */}
+                <div className='px-3 pb-3'>
+                    {isEditing ? (
+                        <textarea
+                            autoFocus
+                            className='w-full bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-gray-400'
+                            placeholder='type something'
+                            value={text}
+                            style={{ userSelect: 'text' }}
+                            onChange={(e) => setText(e.target.value)}
+                            onBlur={() => {
+                                setIsEditing(false)
+                                onTextSave(text)
+                            }}
+                            onPointerDown={(e) => e.stopPropagation()}
+                        />
+                    ) : (
+                        <p
+                            className='text-sm text-gray-800 min-h-12 cursor-text'
+                            onPointerDown={(e) => {
+                                if (isOwner) e.stopPropagation()
+                            }}
+                            onClick={() => {
+                                if (isOwner) setIsEditing(true)
+                            }}
+                        >
+                            {text || <span className='text-gray-400'>type something</span>}
+                        </p>
                     )}
-            </div>
-            {/* likes count display */}
-            <div className='flex items-center justify-between px-3 pb-2'>
-                <span className={`text-xs ${likedByMe ? 'text-red-400' : 'text-gray-400'}`}>
-                    {likeCount > 0 ? `♥ ${likeCount}` : '♥'}
-                </span>
-            </div>
+                </div>
 
+                {/* likes count */}
+                <div className='flex items-center justify-between px-3 pb-2'>
+                    <span className={`text-xs ${likedByMe ? 'text-red-400' : 'text-gray-400'}`}>
+                        {likeCount > 0 ? `♥ ${likeCount}` : '♥'}
+                    </span>
+                </div>
+            </div>
         </motion.div>
     )
 }
