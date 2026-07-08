@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import ShareRedirect from './components/ShareRedirect.jsx'
 import './index.css'
-import { BrowserRouter, Route } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 const queryClient = new QueryClient()
 

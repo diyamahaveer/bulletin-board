@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useMotionValue, animate } from 'framer-motion'
 import { useBoard } from '../store/useBoard';
-import NoteMenu from './NoteMenu';
+import NoteMenu, { TEXT_COLOR_MAP } from './NoteMenu';
 
 export default function StickyNote({ 
   id,
@@ -48,6 +48,8 @@ export default function StickyNote({
     const noteStart = useRef({ x: 0, y: 0 })
 
     const scaleRef = useRef(scale);
+
+    const dynamicAccentColor = TEXT_COLOR_MAP[currentColor?.toLowerCase()] || '#BCB458';
 
     useEffect(() => {
         scaleRef.current = scale
@@ -107,24 +109,29 @@ export default function StickyNote({
                 touchAction: 'none',
                 userSelect: 'none',
                 boxShadow: isHighlighted
-                ? '0 0 0 4px rgba(234, 179, 8, 0.8), 0 4px 6px rgba(0,0,0,0.1)'
+                ? '0 0 0 3px rgba(234, 179, 8, 0.6)'
                 : isEditing
-                    ? '0 0 0 3px rgba(59, 130, 246, 0.6)'
-                    : '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    ? '0 0 0 3px rgba(59, 130, 246, 0.4)'
+                    : '4px 4px 12px rgba(0,0,0,0.08)'
             }}
-            className='absolute rounded-lg shadow-lg w-48 min-h-24'
+            className='absolute w-64 h-64 flex flex-col justify-between'
         >
             {/* three-dot menu */}
-            <div className='flex justify-end p-1'>
+            <div className='flex justify-end px-4 pt-4 pb-0 z-10'>
                 <button
-                    className='text-gray-500 hover:text-gray-800 text-lg leading-none'
+                    className='text-gray-400 hover:text-gray-600 p-1.5 rounded-md hover:bg-black/5'
+                    style={{ color: dynamicAccentColor }}
                     onPointerDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
                         e.stopPropagation()
                         toggleMenu(id)
                     }}
                 >
-                    ...
+                    <span className='flex gap-1'>
+                        <span className='w-1.5 h-1.5 rounded-full bg-current inline-block' />
+                        <span className='w-1.5 h-1.5 rounded-full bg-current inline-block' />
+                        <span className='w-1.5 h-1.5 rounded-full bg-current inline-block' />
+                    </span>
                 </button>
                 <NoteMenu
                     id={id}
@@ -141,11 +148,14 @@ export default function StickyNote({
             </div>
 
             {/* text area */}
-            <div className='px-3 pb-3'>
+            <div className='px-5 pb-2 pt-1 grow flex flex-col'>
                 {isEditing ? (
                     <textarea
-                        autoFocus
-                        className='w-full bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-gray-400'
+                        className='w-full h-full bg-transparent resize-none outline-none text-base leading-relaxed grow text-black'
+                        style={{ 
+                            userSelect: 'text',
+                            '--placeholder-color': dynamicAccentColor
+                        }}
                         placeholder='type something'
                         value={text}
                         style={{ userSelect: 'text' }}
@@ -155,10 +165,12 @@ export default function StickyNote({
                             onTextSave(text)
                         }}
                         onPointerDown={(e) => e.stopPropagation()}
+                        autoFocus
                     />
                 ) : (
                     <p
-                        className={`absolute rounded-lg shadow-lg w-48 min-h-24 ${isOwner ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
+                        className={`w-full h-full text-base leading-relaxed wrap-break-word grow ${
+                        text ? 'text-black' : '' } ${isOwner ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
                         onPointerDown={(e) => {
                             if (isOwner) e.stopPropagation()
                         }}
@@ -166,14 +178,26 @@ export default function StickyNote({
                             if (isOwner) setIsEditing(true)
                         }}
                     >
-                        {text || <span className='text-gray-400'>type something</span>}
+                        {text || (
+                            <span style={{ color: dynamicAccentColor }}>
+                                type something
+                            </span>
+                        )}
                     </p>
                 )}
             </div>
 
             {/* likes count */}
-            <div className='flex items-center justify-between px-3 pb-2'>
-                <span className={`text-xs ${likedByMe ? 'text-red-400' : 'text-gray-400'}`}>
+            <div className='flex justify-end px-2.5 pb-1 pt-0'>
+                <span 
+                    className='text-2xl font-medium cursor-pointer select-none p-1 transition-transform active:scale-90'
+                    style={{ color: likedByMe ? '#ef4444' : dynamicAccentColor }}
+                    onClick={(e) => {
+                        e.stopPropagation(); 
+                        onLike();
+                    }}
+                    onPointerDown={(e) => e.stopPropagation()} 
+                >
                     {likeCount > 0 ? `♥ ${likeCount}` : '♥'}
                 </span>
             </div>

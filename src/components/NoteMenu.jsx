@@ -10,6 +10,17 @@ const COLOR_OPTIONS = [
     '#e9d5ff', // purple
     '#fed7aa', // orange
 ]
+
+// Maps each background color option to its matching darker, text/icon color
+export const TEXT_COLOR_MAP = {
+    '#fef08a': '#BCB458', // Yellow gets your explicit BCB458 color
+    '#fecaca': '#B85C5C', // Dark pink
+    '#bfdbfe': '#557CA6', // Dark blue
+    '#bbf7d0': '#52966A', // Dark green
+    '#e9d5ff': '#8C63B8', // Dark purple
+    '#fed7aa': '#B57538', // Dark orange
+}
+
 export default function NoteMenu({
     id,
     isOwner,
