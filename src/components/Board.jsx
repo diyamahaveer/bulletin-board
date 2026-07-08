@@ -4,7 +4,7 @@ import { useNotes } from '../hooks/useNotes';
 import { supabase } from '../lib/supabase';
 import { useRealtime } from '../hooks/useRealtime'
 
-export default function Board(){
+export default function Board({ initialFocusX = null, initialFocusY = null, highlightId = null }){
     //the offset is how far we've moved on your canvas from the starting position and x moves left/right and y moves up/down
     // 0, 0 means we haven't moved yet
     const[offset, setOffset] = useState({x: 0 , y: 0});
@@ -13,6 +13,8 @@ export default function Board(){
     const [scale, setScale] = useState(1)
     //tracks if the user is currently searching, or moving around
     const[isDragging, setIsDragging] = useState(false)
+    //tracks highlighting notes
+    const[activeHighlightId, setActiveHighlightId] = useState(highlightId)
     //this is for users
     const[currentUserId, setCurrentUserId] = useState(null)
     //dragStart tracks where the user is and how far they have moved
@@ -62,6 +64,22 @@ export default function Board(){
             setCurrentUserId(user?.id ?? null)
         })
     }, [])
+
+    useEffect(() => {
+        if(initialFocusX === null || initialFocusY === null) return
+
+        //pan the canvas so the shared note appears in the center of the screen
+        const screenCenterX = window.innerWidth / 2
+        const screenCenterY = window.innerHeight / 2
+
+        setOffset({
+            x: screenCenterX - initialFocusX * scale,
+            y: screenCenterY - initialFocusY * scale,
+        })
+
+        //clear the highlight after 3 seconds
+        setTimeout(() => setActiveHighlightId(null), 3000)
+    }, [initialFocusX, initialFocusY])
 
     //this useEffect sets up the mouse move and mouse up listeners
     //this is for panning
@@ -174,6 +192,7 @@ export default function Board(){
                     isOwner={note.user_id === currentUserId}
                     likeCount={note.likeCount}
                     likedByMe={note.likedByMe}
+                    isHighlighted={note.id === activeHighlightId}
                     offset={offset}
                     scale={scale}
 
@@ -190,7 +209,10 @@ export default function Board(){
                         deleteNote.mutate({ id: note.id })
                     }
 
-                    onShare={() => console.log('share', note.id)}
+                    onShare={() => {
+                        const shareUrl = `${window.location.origin}/note/${note.share_id}`
+                        navigator.clipboard.writeText(shareUrl)
+                    }}
                     onLike={() => {
                         const note_data = notes.find(n => n.id === note.id)
                         if(note_data?.likedByMe){

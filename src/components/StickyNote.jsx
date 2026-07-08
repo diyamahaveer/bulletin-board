@@ -16,6 +16,7 @@ export default function StickyNote({
   onTextSave,
   likeCount = 0,
   likedByMe = false,
+  isHighlighted = false,
   onRecolor = () => {},
   onDelete = () => {},
   onShare = () => {},
@@ -92,6 +93,7 @@ export default function StickyNote({
     return (
         <motion.div
             onPointerDown={(e) => {
+                if (!isOwner) return
                 const tag = e.target.tagName.toLowerCase()
                 if (tag === 'button' || tag === 'textarea' || tag === 'p' || tag === 'span') return
                 handlePointerDown(e)
@@ -104,7 +106,9 @@ export default function StickyNote({
                 backgroundColor: currentColor,
                 touchAction: 'none',
                 userSelect: 'none',
-                boxShadow: isEditing
+                boxShadow: isHighlighted
+                ? '0 0 0 4px rgba(234, 179, 8, 0.8), 0 4px 6px rgba(0,0,0,0.1)'
+                : isEditing
                     ? '0 0 0 3px rgba(59, 130, 246, 0.6)'
                     : '0 4px 6px rgba(0, 0, 0, 0.1)'
             }}
@@ -154,7 +158,7 @@ export default function StickyNote({
                     />
                 ) : (
                     <p
-                        className='text-sm text-gray-800 min-h-12 cursor-text'
+                        className={`absolute rounded-lg shadow-lg w-48 min-h-24 ${isOwner ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
                         onPointerDown={(e) => {
                             if (isOwner) e.stopPropagation()
                         }}
