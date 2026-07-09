@@ -14,7 +14,6 @@ async function fetchNotes(userId) {
     if (error) throw error
     return data.map(note => ({
         ...note,
-        likeCount: note.note_likes.length,
         likedByMe: note.note_likes.some(l => l.user_id === userId),
 
     }))
@@ -33,16 +32,15 @@ export function useNotes(currentUserId) {
 
     //CREATE
     const createNote = useMutation({
-        mutationFn: async ({ x, y }) => {
-            const { data: { user }} = await supabase.auth.getUser()
+        mutationFn: async ({ x, y, color }) => {  // color param
+            const { data: { user } } = await supabase.auth.getUser()
             const { data, error } = await supabase
                 .from('notes')
-                .insert({ x, y, user_id: user.id })
+                .insert({ x, y, color, user_id: user.id })  //pass color
                 .select()
                 .single()
             if (error) throw error
             return data
-
         },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notes'] }),
     })

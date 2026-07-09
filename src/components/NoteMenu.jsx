@@ -3,22 +3,22 @@ import { useBoard } from '../store/useBoard'
 
 //preset colors for the sticky notes
 const COLOR_OPTIONS = [
-    '#fef08a', // yellow
-    '#fecaca', // pink
-    '#bfdbfe', // blue
-    '#bbf7d0', // green
-    '#e9d5ff', // purple
-    '#fed7aa', // orange
+    '#FFF15C', // yellow
+    '#ff7eb9', // pink
+    '#71d7ff', // blue
+    '#cdfc93', // green
+    '#ce81ff', // purple
+    '#ffc14a', // orange
 ]
 
 // Maps each background color option to its matching darker, text/icon color
 export const TEXT_COLOR_MAP = {
-    '#fef08a': '#BCB458', // Yellow gets your explicit BCB458 color
-    '#fecaca': '#B85C5C', // Dark pink
-    '#bfdbfe': '#557CA6', // Dark blue
-    '#bbf7d0': '#52966A', // Dark green
-    '#e9d5ff': '#8C63B8', // Dark purple
-    '#fed7aa': '#B57538', // Dark orange
+    '#FFF15C': '#8A7A00', // yellow
+    '#ff7eb9': '#9C1F5E', // pink
+    '#71d7ff': '#0077A8', // blue
+    '#cdfc93': '#3A8A00', // green
+    '#ce81ff': '#7B00CC', // purple
+    '#ffc14a': '#A65C00', // orange
 }
 
 export default function NoteMenu({

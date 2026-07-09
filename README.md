@@ -42,3 +42,17 @@ export default function App() {
 The culprit is handleDrag's correction math. The formula info.delta.x * (1 - 1/scale) was written to subtract a correction, but Framer Motion's drag already applies the delta correctly relative to the element's own coordinate space
 
 The simplest fix: delete handleDrag entirely and remove onDrag={handleDrag}. Framer Motion handles the 1:1 tracking natively when you're not fighting it:
+
+
+
+
+my ui fixes 
+- stop having the heart count show up -- DONE -> need an alternative? ask lauren
+- change the heart icon
+- change shadows to better them
+- change drag highlighting everything around it
+- add the character limit and format that into the design
+- add the ui three dot menu and icons for it 
+- makes changes to the secondary color and notes -- DONE
+- if i press the three dot menu and it's behind a bunch of notes you can't see the menu 
+- doesn't allow for hitting enter or making spaces, i want it to, but count it to character limit

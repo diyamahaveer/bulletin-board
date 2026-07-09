@@ -56,7 +56,10 @@ export default function Board({ initialFocusX = null, initialFocusY = null, high
         const worldX = (screenCenterX - offset.x) / scale
         const worldY = (screenCenterY - offset.y) / scale
 
-        createNote.mutate({ x: worldX, y: worldY })
+        const colors = ['#FFF15C', '#ff7eb9', '#71d7ff', '#cdfc93', '#ce81ff', '#ffc14a']
+        const color = colors[Math.floor(Math.random() * colors.length)]
+
+        createNote.mutate({ x: worldX, y: worldY, color })
     }
 
     useEffect(() => {
@@ -190,7 +193,6 @@ export default function Board({ initialFocusX = null, initialFocusY = null, high
                     color={note.color}
                     content={note.content}
                     isOwner={note.user_id === currentUserId}
-                    likeCount={note.likeCount}
                     likedByMe={note.likedByMe}
                     isHighlighted={note.id === activeHighlightId}
                     offset={offset}

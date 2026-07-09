@@ -14,7 +14,6 @@ export default function StickyNote({
   scale = 1,
   onDragEnd,
   onTextSave,
-  likeCount = 0,
   likedByMe = false,
   isHighlighted = false,
   onRecolor = () => {},
@@ -49,7 +48,7 @@ export default function StickyNote({
 
     const scaleRef = useRef(scale);
 
-    const dynamicAccentColor = TEXT_COLOR_MAP[currentColor?.toLowerCase()] || '#BCB458';
+    const dynamicAccentColor = TEXT_COLOR_MAP[currentColor?.toLowerCase()] || '#B2A732';
 
     useEffect(() => {
         scaleRef.current = scale
@@ -198,7 +197,7 @@ export default function StickyNote({
                     }}
                     onPointerDown={(e) => e.stopPropagation()} 
                 >
-                    {likeCount > 0 ? `♥ ${likeCount}` : '♥'}
+                    {'♥'}
                 </span>
             </div>
         </motion.div>
