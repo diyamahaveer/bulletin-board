@@ -103,6 +103,7 @@ export function useNotes(currentUserId) {
                 .insert({ note_id: id, user_id: user.id })
             if (error) throw error
         },
+        onError: (err) => console.error('report failed:', err.message),
         
     })
 

@@ -48,11 +48,7 @@ The simplest fix: delete handleDrag entirely and remove onDrag={handleDrag}. Fra
 
 my ui fixes 
 - stop having the heart count show up -- DONE -> need an alternative? ask lauren
-- change the heart icon
+- change the heart icon and all other icons
 - change shadows to better them
-- change drag highlighting everything around it
-- add the character limit and format that into the design
 - add the ui three dot menu and icons for it 
-- makes changes to the secondary color and notes -- DONE
-- if i press the three dot menu and it's behind a bunch of notes you can't see the menu 
-- doesn't allow for hitting enter or making spaces, i want it to, but count it to character limit
+- reporting notes dont do nothing -- DONE -> now need to be able to delete reported notes completly

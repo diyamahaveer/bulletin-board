@@ -10,26 +10,27 @@ export default function Board({ initialFocusX = null, initialFocusY = null, high
     const[offset, setOffset] = useState({x: 0 , y: 0});
     //scale tracks the zoom level of the canvas
     // 1 means 100% zoom, 0.5 means zoomed out, 2 means zoomed in
-    const [scale, setScale] = useState(1)
+    const [scale, setScale] = useState(1);
     //tracks if the user is currently searching, or moving around
-    const[isDragging, setIsDragging] = useState(false)
+    const[isDragging, setIsDragging] = useState(false);
+    //link copying confirmation
+    const [copied, setCopied] = useState(false);
     //tracks highlighting notes
-    const[activeHighlightId, setActiveHighlightId] = useState(highlightId)
+    const[activeHighlightId, setActiveHighlightId] = useState(highlightId);
     //this is for users
-    const[currentUserId, setCurrentUserId] = useState(null)
+    const[currentUserId, setCurrentUserId] = useState(null);
     //dragStart tracks where the user is and how far they have moved
     //we use useRef that's null meaning it's current {null}
-    const dragStart = useRef(null)
+    const dragStart = useRef(null);
     //notes array
     
-    const { notes, isLoading, createNote, updatePosition, updateText, recolorNote, deleteNote, reportNote, likeNote, unlikeNote} = useNotes(currentUserId)
-    useRealtime(currentUserId)
+    const { notes, isLoading, createNote, updatePosition, updateText, recolorNote, deleteNote, reportNote, likeNote, unlikeNote} = useNotes(currentUserId);
+    useRealtime(currentUserId);
 
     //this function occurs when someone presses the mouse button down on the baord
     const handleMouseDown = (e) => {
         //e is the event object that is passed to the event handler automatically and this one is checking which button was clicked
         //if it's not a left click then we ignore it and stop function
-        console.log('board mouse down fired')
         if(e.button !== 0){
             return;
         }
@@ -158,13 +159,23 @@ export default function Board({ initialFocusX = null, initialFocusY = null, high
     return (
         <div
         className='w-screen h-screen overflow-hidden bg-stone-100'
-        style={{cursor: isDragging ? 'grabbing' : 'grab'}}
+        style={{
+            cursor: isDragging ? 'grabbing' : 'grab',
+            userSelect: isDragging ? 'none' : 'auto',
+            WebkitUserSelect: isDragging ? 'none' : 'auto',
+        }}
         onPointerDown={handleMouseDown}
         >
 
             {isLoading && (
                 <div className='fixed top-4 left-1/2 -translate-x-1/2 text-sm text-gray-400 bg-white px-3 py-1 rounded-full shadow'>
                     loading notes...
+                </div>
+            )}
+
+            {copied && (
+                <div className='fixed top-8 right-8 bg-white text-black text-sm px-6 py-4 rounded-lg shadow-lg z-50'>
+                    link copied!
                 </div>
             )}
 
@@ -213,7 +224,10 @@ export default function Board({ initialFocusX = null, initialFocusY = null, high
 
                     onShare={() => {
                         const shareUrl = `${window.location.origin}/note/${note.share_id}`
-                        navigator.clipboard.writeText(shareUrl)
+                        navigator.clipboard.writeText(shareUrl).then(() =>{
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000)
+                        })
                     }}
                     onLike={() => {
                         const note_data = notes.find(n => n.id === note.id)
@@ -223,7 +237,7 @@ export default function Board({ initialFocusX = null, initialFocusY = null, high
                             likeNote.mutate({ id: note.id })
                         }
                     }}
-                    onReport={() => console.log('report', note.id)}
+                    onReport={() => reportNote.mutate({ id: note.id })}
                     />
                 
                 ))}

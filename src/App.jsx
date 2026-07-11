@@ -17,7 +17,7 @@ export default function App() {
   return (
     <Board
       initialFocusX={noteX || null}
-      initalFocusY={noteY || null}
+      initialFocusY={noteY || null}
       highlightId={highlightId || null}
     />
   )
