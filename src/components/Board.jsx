@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import StickyNote from './StickyNote'
 import { useNotes } from '../hooks/useNotes';
-import { supabase } from '../lib/supabase';
 import { useRealtime } from '../hooks/useRealtime'
 
-export default function Board({ initialFocusX = null, initialFocusY = null, highlightId = null }){
+export default function Board({ currentUserId, initialFocusX = null, initialFocusY = null, highlightId = null }){
     //the offset is how far we've moved on your canvas from the starting position and x moves left/right and y moves up/down
     // 0, 0 means we haven't moved yet
     const[offset, setOffset] = useState({x: 0 , y: 0});
@@ -17,8 +16,6 @@ export default function Board({ initialFocusX = null, initialFocusY = null, high
     const [copied, setCopied] = useState(false);
     //tracks highlighting notes
     const[activeHighlightId, setActiveHighlightId] = useState(highlightId);
-    //this is for users
-    const[currentUserId, setCurrentUserId] = useState(null);
     //dragStart tracks where the user is and how far they have moved
     //we use useRef that's null meaning it's current {null}
     const dragStart = useRef(null);
@@ -63,11 +60,11 @@ export default function Board({ initialFocusX = null, initialFocusY = null, high
         createNote.mutate({ x: worldX, y: worldY, color })
     }
 
-    useEffect(() => {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-            setCurrentUserId(user?.id ?? null)
-        })
-    }, [])
+    // useEffect(() => {
+    //     supabase.auth.getUser().then(({ data: { user } }) => {
+    //         setCurrentUserId(user?.id ?? null)
+    //     })
+    // }, [])
 
     useEffect(() => {
         if(initialFocusX === null || initialFocusY === null) return

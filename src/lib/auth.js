@@ -1,18 +1,15 @@
 import { supabase } from "./supabase";
 
-export async function getOrCreateSession() {
-    //check if they are a returning visitor or not
-    const { data: { session } } = await supabase.auth.getSession()
-
-    if ( session ) return session
-
-    const { data, error } = await supabase.auth.signInAnonymously()
-
-    if (error) {
-        console.error('Auth error:', error)
-        return null
-    }
-
-    return data.session
-    
+let sessionPromise = null
+export function getOrCreateSession() {
+  if (!sessionPromise) {
+    sessionPromise = (async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) return session
+      const { data, error } = await supabase.auth.signInAnonymously()
+      if (error) { sessionPromise = null; throw error }
+      return data.session
+    })()
+  }
+  return sessionPromise
 }

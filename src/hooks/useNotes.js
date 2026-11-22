@@ -33,10 +33,9 @@ export function useNotes(currentUserId) {
     //CREATE
     const createNote = useMutation({
         mutationFn: async ({ x, y, color }) => {  // color param
-            const { data: { user } } = await supabase.auth.getUser()
             const { data, error } = await supabase
                 .from('notes')
-                .insert({ x, y, color, user_id: user.id })  //pass color
+                .insert({ x, y, color, user_id: currentUserId })  //pass color
                 .select()
                 .single()
             if (error) throw error
@@ -97,10 +96,9 @@ export function useNotes(currentUserId) {
     //REPORT NOTES
     const reportNote = useMutation({
         mutationFn: async ({ id }) => {
-            const { data: { user } } = await supabase.auth.getUser()
             const { error } = await supabase
                 .from('note_reports')
-                .insert({ note_id: id, user_id: user.id })
+                .insert({ note_id: id, user_id: currentUserId })
             if (error) throw error
         },
         onError: (err) => console.error('report failed:', err.message),
@@ -110,10 +108,9 @@ export function useNotes(currentUserId) {
     //LIKE NOTES
     const likeNote = useMutation({
         mutationFn: async ({ id }) => {
-            const { data: { user } } = await supabase.auth.getUser()
             const { error } = await supabase
                 .from('note_likes')
-                .insert({ note_id: id, user_id: user.id })
+                .insert({ note_id: id, user_id: currentUserId })
             if (error) throw error
         },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notes'] }),
@@ -123,12 +120,11 @@ export function useNotes(currentUserId) {
     //UNLIKE NOTES
     const unlikeNote = useMutation({
         mutationFn: async ({ id }) => {
-            const { data: { user } } = await supabase.auth.getUser()
             const { error } = await supabase
                 .from('note_likes')
                 .delete()
                 .eq('note_id', id)
-                .eq('user_id', user.id)
+                .eq('user_id', currentUserId)
             if (error) throw error
         },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notes'] }),
